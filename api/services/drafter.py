@@ -94,6 +94,8 @@ async def create_draft_in_docs(
     model_used = "template"
     ai_generated = False
 
+    logger.info(f"LLM service configured: {llm.is_configured}, key present: {bool(llm.api_key)}")
+
     # Try AI draft first
     if llm.is_configured:
         try:
@@ -111,15 +113,11 @@ async def create_draft_in_docs(
             draft_text = result["text"]
             model_used = result.get("model", "unknown")
             ai_generated = True
-            logger.info(
-                "AI draft generated: model=%s, tokens=%s",
-                model_used,
-                result.get("usage", {}),
-            )
+            logger.info(f"AI draft generated: model={model_used}")
         except OpenRouterError as e:
-            logger.warning("LLM draft failed (%s), falling back to template", e)
+            logger.warning(f"LLM draft failed: {e}")
         except Exception as e:
-            logger.error("Unexpected LLM error: %s", e, exc_info=True)
+            logger.error(f"Unexpected LLM error: {e}")
 
     # Fallback to template
     if draft_text is None:
