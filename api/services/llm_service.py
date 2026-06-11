@@ -21,17 +21,18 @@ OPENROUTER_HEADERS = {
 }
 
 # Model presets — map tier to OpenRouter model ID
+# All models verified to exist on OpenRouter as of 2026-06-11
 MODELS = {
-    # Free / ultra-cheap tier
-    "free": "google/gemini-2.0-flash-lite-001",
+    # Free tier
+    "free": "google/gemma-4-26b-a4b-it:free",
     "free_2": "meta-llama/llama-3.1-8b-instruct:free",
     # Cheap tier (good enough for drafts)
-    "cheap": "openrouter/auto",          # auto-picks best value
-    "cheap_2": "google/gemini-2.0-flash-001",
+    "cheap": "google/gemma-4-26b-a4b-it:free",
+    "cheap_2": "openrouter/auto",
     "cheap_3": "mistralai/mistral-7b-instruct:free",
     # Standard tier (quality drafts)
-    "standard": "anthropic/claude-sonnet-4",
-    "standard_2": "openai/gpt-4o-mini",
+    "standard": "openai/gpt-4o-mini",
+    "standard_2": "anthropic/claude-sonnet-4",
     # Premium tier (best quality)
     "premium": "anthropic/claude-sonnet-4",
     "premium_2": "openai/gpt-4o",
