@@ -9,7 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy requirements first for layer caching
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Force fresh install — no cache, no build cache
+RUN pip install --no-cache-dir --force-reinstall -r requirements.txt
 
 # Copy application
 COPY . .
