@@ -1,0 +1,10 @@
+# Caddyfile for Email Sail Agent
+# Replace email-sail.innerinetcompany.com with your domain
+
+email-sail.innerinetcompany.com {
+    reverse_proxy email-sail:8090
+    log {
+        output stdout
+        format json
+    }
+}

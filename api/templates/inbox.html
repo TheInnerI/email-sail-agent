@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Inbox — Email Sail{% endblock %}
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+    <h1 style="font-size: 24px;">📧 Inbox</h1>
+    <div style="display: flex; gap: 8px;">
+        <button class="btn btn-primary" onclick="classifyAll()">🔄 Classify All</button>
+        <select class="btn btn-secondary" id="category-filter" onchange="filterByCategory(this.value)" style="padding: 8px 12px;">
+            <option value="">All Categories</option>
+            <option value="urgent">🔴 Urgent</option>
+            <option value="customer_inquiry">🟡 Customer Inquiry</option>
+            <option value="invoice_payment">🟢 Invoice/Payment</option>
+            <option value="booking_request">🟣 Booking Request</option>
+            <option value="revenue_alert">🟠 Revenue Alert</option>
+            <option value="newsletter">🔵 Newsletter</option>
+            <option value="spam">⚪ Low Priority</option>
+        </select>
+    </div>
+</div>
+
+<div id="email-list" class="email-list">
+    <div class="empty-state"><div class="icon">⏳</div><p>Loading your inbox...</p></div>
+</div>
+
+<!-- Email Detail Modal -->
+<div id="email-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center;">
+    <div class="card" style="max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <div class="card-header">
+            <div class="card-title" id="modal-subject">Email</div>
+            <button class="btn btn-sm btn-secondary" onclick="closeModal()">✕ Close</button>
+        </div>
+        <div id="modal-content"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentEmails = [];
+
+async function loadEmails(category = '') {
+    const container = document.getElementById('email-list');
+    container.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>Loading...</p></div>';
+
+    try {
+        const url = category ? `/api/emails/list?category=${category}&limit=50` : '/api/emails/list?limit=50';
+        const resp = await fetch(url);
+        const data = await resp.json();
+        currentEmails = data.emails || [];
+        renderEmails(currentEmails);
+    } catch (e) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>Error: ${e.message}</p></div>`;
+    }
+}
+
+function renderEmails(emails) {
+    const container = document.getElementById('email-list');
+    if (!emails.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No emails in this category</p></div>';
+        return;
+    }
+    container.innerHTML = emails.map((e, i) => `
+        <div class="email-item ${e.is_unread ? 'unread' : ''}" onclick="openEmail(${i})">
+            <div class="email-from">${e.from_name || e.from_email}</div>
+            <div class="email-subject">${e.subject}</div>
+            <div class="email-snippet">${e.snippet || ''}</div>
+            <span class="badge badge-${e.classification?.category || 'inquiry'}">${formatCategory(e.classification?.category)}</span>
+            <div class="email-date">${formatDate(e.date)}</div>
+        </div>
+    `).join('');
+}
+
+function openEmail(index) {
+    const e = currentEmails[index];
+    document.getElementById('modal-subject').textContent = e.subject;
+    document.getElementById('modal-content').innerHTML = `
+        <div style="margin-bottom: 16px;">
+            <strong>From:</strong> ${e.from_name} &lt;${e.from_email}&gt;<br>
+            <strong>Date:</strong> ${e.date}<br>
+            <strong>Category:</strong> <span class="badge badge-${e.classification?.category || 'inquiry'}">${formatCategory(e.classification?.category)}</span>
+            <strong>Confidence:</strong> ${Math.round((e.classification?.confidence || 0) * 100)}%
+        </div>
+        <div style="background: var(--bg); padding: 16px; border-radius: 8px; margin-bottom: 16px; white-space: pre-wrap; font-size: 14px; line-height: 1.6;">
+            ${e.body || e.snippet || '(No content)'}
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" onclick="createDraft('${e.id}')">✍️ Draft Response</button>
+            <button class="btn btn-secondary" onclick="classifyEmail('${e.id}')">🔄 Re-classify</button>
+            <a href="https://mail.google.com/mail/u/0/#inbox/${e.id}" target="_blank" class="btn btn-secondary">Open in Gmail</a>
+        </div>
+    `;
+    document.getElementById('email-modal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('email-modal').style.display = 'none';
+}
+
+async function createDraft(messageId) {
+    try {
+        const resp = await fetch('/api/drafts/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message_id: messageId, tone: 'professional' }),
+        });
+        const data = await resp.json();
+        if (data.draft_created) {
+            alert(`Draft created!\n\n${data.doc_url}`);
+            window.open(data.doc_url, '_blank');
+        }
+    } catch (e) {
+        alert('Error creating draft: ' + e.message);
+    }
+}
+
+async function classifyEmail(messageId) {
+    try {
+        const resp = await fetch(`/api/emails/${messageId}/classify`, { method: 'POST' });
+        const data = await resp.json();
+        alert(`Classified as: ${data.category} (${Math.round(data.confidence * 100)}% confidence)`);
+        loadEmails();
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+async function classifyAll() {
+    if (!confirm('Classify all unread emails? This may take a minute.')) return;
+    try {
+        const resp = await fetch('/api/emails/classify-all', { method: 'POST' });
+        const data = await resp.json();
+        alert(`Classified ${data.classified} emails!`);
+        loadEmails();
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+function filterByCategory(category) {
+    loadEmails(category);
+}
+
+function formatCategory(cat) {
+    const labels = {
+        urgent: 'Urgent', customer_inquiry: 'Inquiry', invoice_payment: 'Invoice',
+        booking_request: 'Booking', revenue_alert: 'Revenue', newsletter: 'Newsletter', spam: 'Low Priority',
+    };
+    return labels[cat] || cat || '—';
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+// Load from URL params
+const params = new URLSearchParams(window.location.search);
+loadEmails(params.get('category') || '');
+</script>
+{% endblock %}

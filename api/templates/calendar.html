@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Calendar — Email Sail{% endblock %}
+{% block content %}
+<h1 style="font-size: 24px; margin-bottom: 24px;">📅 Calendar & Scheduling</h1>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header"><div class="card-title">Upcoming Events</div></div>
+        <div id="events-list">
+            <div class="empty-state"><div class="icon">⏳</div><p>Loading...</p></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><div class="card-title">Find Free Slots</div></div>
+        <div class="form-group">
+            <label>Meeting Duration</label>
+            <select id="slot-duration">
+                <option value="15">15 minutes</option>
+                <option value="30" selected>30 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="90">1.5 hours</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="findSlots()" style="width: 100%; margin-bottom: 16px;">🔍 Find Available Times</button>
+        <div id="slots-list" class="slot-list"></div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 16px;">
+    <div class="card-header"><div class="card-title">📅 Book Appointment</div></div>
+    <div class="grid-2">
+        <div class="form-group">
+            <label>Customer Name</label>
+            <input type="text" id="appt-name" placeholder="John Doe">
+        </div>
+        <div class="form-group">
+            <label>Customer Email</label>
+            <input type="email" id="appt-email" placeholder="john@example.com">
+        </div>
+        <div class="form-group">
+            <label>Start Time</label>
+            <input type="datetime-local" id="appt-start">
+        </div>
+        <div class="form-group">
+            <label>End Time</label>
+            <input type="datetime-local" id="appt-end">
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Notes</label>
+        <textarea id="appt-notes" rows="2" placeholder="Meeting purpose..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="bookAppointment()">📅 Book Appointment</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadEvents() {
+    const container = document.getElementById('events-list');
+    try {
+        const resp = await fetch('/api/calendar/events?days=7');
+        const data = await resp.json();
+        if (!data.events?.length) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No upcoming events</p></div>';
+            return;
+        }
+        container.innerHTML = '<div class="email-list">' + data.events.map(e => `
+            <div class="email-item">
+                <div class="email-subject">${e.summary || 'Untitled'}</div>
+                <div class="email-date">${formatDateTime(e.start?.dateTime || e.start?.date)}</div>
+            </div>
+        `).join('') + '</div>';
+    } catch (e) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>Error: ${e.message}</p></div>`;
+    }
+}
+
+async function findSlots() {
+    const duration = document.getElementById('slot-duration').value;
+    const container = document.getElementById('slots-list');
+    container.innerHTML = '<p style="color: var(--text-muted);">Finding slots...</p>';
+    try {
+        const resp = await fetch(`/api/calendar/free-slots?duration=${duration}&days=7`);
+        const data = await resp.json();
+        if (!data.slots?.length) {
+            container.innerHTML = '<p style="color: var(--text-muted);">No free slots found</p>';
+            return;
+        }
+        container.innerHTML = data.slots.map(s => `
+            <button class="slot-btn" onclick="selectSlot('${s.start}', '${s.end}')">${s.display}</button>
+        `).join('');
+    } catch (e) {
+        container.innerHTML = `<p style="color: var(--red);">Error: ${e.message}</p>`;
+    }
+}
+
+function selectSlot(start, end) {
+    document.getElementById('appt-start').value = start.slice(0, 16);
+    document.getElementById('appt-end').value = end.slice(0, 16);
+    document.querySelector('.card:last-child').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function bookAppointment() {
+    const body = {
+        customer_name: document.getElementById('appt-name').value,
+        customer_email: document.getElementById('appt-email').value,
+        start_time: document.getElementById('appt-start').value,
+        end_time: document.getElementById('appt-end').value,
+        notes: document.getElementById('appt-notes').value,
+    };
+    if (!body.start_time || !body.end_time) { alert('Please select start and end times'); return; }
+    try {
+        const resp = await fetch('/api/calendar/book', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        const data = await resp.json();
+        if (data.booked) {
+            alert(`Booked! Event: ${data.event_link}`);
+            loadEvents();
+        }
+    } catch (e) { alert('Error: ' + e.message); }
+}
+
+function formatDateTime(dt) {
+    if (!dt) return '';
+    return new Date(dt).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+loadEvents();
+</script>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}CRM — Email Sail{% endblock %}
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+    <h1 style="font-size: 24px;">📊 Customer CRM</h1>
+    <button class="btn btn-primary" onclick="createSheet()">📄 Create CRM Spreadsheet</button>
+</div>
+
+<div class="alert alert-info" id="sheet-status">
+    Connect a Google Sheet to start tracking customer interactions.
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">Contacts</div></div>
+    <div id="contacts-list">
+        <div class="empty-state"><div class="icon">📭</div><p>No contacts yet</p></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function createSheet() {
+    try {
+        const resp = await fetch('/api/crm/create-sheet', { method: 'POST' });
+        const data = await resp.json();
+        if (data.url) {
+            document.getElementById('sheet-status').innerHTML = `✅ CRM created! <a href="${data.url}" target="_blank" style="color: var(--teal);">Open Spreadsheet</a>`;
+            document.getElementById('sheet-status').className = 'alert alert-success';
+        }
+    } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function loadContacts() {
+    const container = document.getElementById('contacts-list');
+    try {
+        const resp = await fetch('/api/crm/contacts');
+        const data = await resp.json();
+        if (data.sheet_url) {
+            document.getElementById('sheet-status').innerHTML = `✅ Connected: <a href="${data.sheet_url}" target="_blank" style="color: var(--teal);">View CRM</a>`;
+        }
+        if (!data.contacts?.length) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No contacts yet. Connect a sheet and start tracking.</p></div>';
+            return;
+        }
+        container.innerHTML = '<table><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Revenue</th><th>Last Contact</th></tr></thead><tbody>' +
+            data.contacts.map(c => `<tr><td>${c.name}</td><td>${c.email}</td><td><span class="badge badge-${c.status === 'new' ? 'inquiry' : 'invoice'}">${c.status}</span></td><td>$${c.revenue}</td><td>${c.last_contact}</td></tr>`).join('') +
+            '</tbody></table>';
+    } catch (e) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>${e.message}</p></div>`;
+    }
+}
+
+loadContacts();
+</script>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Email Sail{% endblock %}
+{% block content %}
+<h1 style="font-size: 24px; margin-bottom: 24px;">⛵ Dashboard</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value" id="stat-emails">—</div>
+        <div class="stat-label">Emails Today</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" id="stat-drafts">—</div>
+        <div class="stat-label">Pending Drafts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" id="stat-urgent">—</div>
+        <div class="stat-label">Urgent</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" id="stat-revenue">—</div>
+        <div class="stat-label">Revenue at Risk</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">📧 Recent Emails</div>
+            <a href="/inbox" class="btn btn-sm btn-secondary">View All</a>
+        </div>
+        <div id="recent-emails" class="email-list">
+            <div class="empty-state">
+                <div class="icon">📭</div>
+                <p>Loading emails...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">✍️ Pending Drafts</div>
+            <a href="/drafts" class="btn btn-sm btn-secondary">Review All</a>
+        </div>
+        <div id="pending-drafts">
+            <div class="empty-state">
+                <div class="icon">📝</div>
+                <p>No pending drafts</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">⚡ Quick Actions</div>
+    </div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="classifyAll()">🔄 Classify All Unread</button>
+        <a href="/inbox?category=urgent" class="btn btn-secondary">🔴 View Urgent</a>
+        <a href="/inbox?category=booking_request" class="btn btn-secondary">📅 Booking Requests</a>
+        <a href="/inbox?category=revenue_alert" class="btn btn-secondary">💰 Revenue Alerts</a>
+        <a href="/calendar" class="btn btn-secondary">📆 My Calendar</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadDashboard() {
+    try {
+        // Load recent emails
+        const emailsResp = await fetch('/api/emails/list?limit=10');
+        const emailsData = await emailsResp.json();
+        renderEmails(emailsData.emails || []);
+
+        // Load drafts
+        const draftsResp = await fetch('/api/drafts/list');
+        const draftsData = await draftsResp.json();
+        renderDrafts(draftsData.drafts || []);
+
+        // Update stats
+        document.getElementById('stat-emails').textContent = emailsData.count || 0;
+        document.getElementById('stat-drafts').textContent = draftsData.count || 0;
+
+        const urgent = (emailsData.emails || []).filter(e => e.classification?.category === 'urgent').length;
+        document.getElementById('stat-urgent').textContent = urgent;
+    } catch (e) {
+        console.error('Dashboard load error:', e);
+    }
+}
+
+function renderEmails(emails) {
+    const container = document.getElementById('recent-emails');
+    if (!emails.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No emails found</p></div>';
+        return;
+    }
+    container.innerHTML = emails.map(e => `
+        <div class="email-item ${e.is_unread ? 'unread' : ''}" onclick="window.location='/inbox'">
+            <div class="email-from">${e.from_name || e.from_email}</div>
+            <div class="email-subject">${e.subject}</div>
+            <span class="badge badge-${e.classification?.category || 'inquiry'}">${e.classification?.category || '—'}</span>
+            <div class="email-date">${formatDate(e.date)}</div>
+        </div>
+    `).join('');
+}
+
+function renderDrafts(drafts) {
+    const container = document.getElementById('pending-drafts');
+    if (!drafts.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>No pending drafts</p></div>';
+        return;
+    }
+    container.innerHTML = drafts.map(d => `
+        <div class="email-item">
+            <div class="email-subject">${d.subject}</div>
+            <a href="${d.doc_url}" target="_blank" class="btn btn-sm btn-primary">Review</a>
+        </div>
+    `).join('');
+}
+
+async function classifyAll() {
+    const btn = document.querySelector('button[onclick="classifyAll()"]');
+    btn.textContent = '⏳ Classifying...';
+    btn.disabled = true;
+    try {
+        const resp = await fetch('/api/emails/classify-all', { method: 'POST' });
+        const data = await resp.json();
+        alert(`Classified ${data.classified} emails!`);
+        loadDashboard();
+    } catch (e) {
+        alert('Error classifying emails: ' + e.message);
+    }
+    btn.textContent = '🔄 Classify All Unread';
+    btn.disabled = false;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) {
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+loadDashboard();
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Drafts — Email Sail{% endblock %}
+{% block content %}
+<h1 style="font-size: 24px; margin-bottom: 24px;">✍️ Pending Drafts</h1>
+<div id="drafts-list">
+    <div class="empty-state"><div class="icon">⏳</div><p>Loading drafts...</p></div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function loadDrafts() {
+    const container = document.getElementById('drafts-list');
+    try {
+        const resp = await fetch('/api/drafts/list');
+        const data = await resp.json();
+        if (!data.drafts?.length) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>No pending drafts</p></div>';
+            return;
+        }
+        container.innerHTML = '<div class="email-list">' + data.drafts.map(d => `
+            <div class="email-item">
+                <div class="email-from">📝 Draft</div>
+                <div class="email-subject">${d.subject}</div>
+                <div class="email-date">${d.created_at}</div>
+                <a href="${d.doc_url}" target="_blank" class="btn btn-sm btn-secondary">Open Doc</a>
+                <button class="btn btn-sm btn-success" onclick="approveDraft(${d.id})">✅ Approve & Send</button>
+                <button class="btn btn-sm btn-danger" onclick="dismissDraft(${d.id})">🗑️ Dismiss</button>
+            </div>
+        `).join('') + '</div>';
+    } catch (e) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>Error: ${e.message}</p></div>`;
+    }
+}
+
+async function approveDraft(id) {
+    if (!confirm('Send this email?')) return;
+    try {
+        await fetch(`/api/drafts/${id}/approve`, { method: 'POST' });
+        alert('Sent!');
+        loadDrafts();
+    } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function dismissDraft(id) {
+    if (!confirm('Dismiss this draft?')) return;
+    await fetch(`/api/drafts/${id}/dismiss`, { method: 'POST' });
+    loadDrafts();
+}
+
+loadDrafts();
+</script>
+{% endblock %}

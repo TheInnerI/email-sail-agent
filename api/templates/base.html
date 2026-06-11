@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Email Sail Agent{% endblock %}</title>
+    <style>
+        :root {
+            --navy: #1a2744;
+            --navy-light: #243352;
+            --teal: #2dd4bf;
+            --teal-dark: #14b8a6;
+            --gold: #f59e0b;
+            --red: #ef4444;
+            --green: #22c55e;
+            --purple: #a855f7;
+            --orange: #f97316;
+            --gray: #6b7280;
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        .nav {
+            background: var(--navy);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            height: 56px;
+            gap: 24px;
+        }
+        .nav-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--teal);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-logo-img {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+        }
+        .nav-logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--teal);
+        }
+        .nav-links {
+            display: flex;
+            gap: 4px;
+            margin-left: auto;
+        }
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.15s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--text);
+            background: var(--navy-light);
+        }
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 16px;
+            padding-left: 16px;
+            border-left: 1px solid var(--border);
+        }
+        .nav-user img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+        .nav-user span {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: var(--teal);
+            color: var(--navy);
+        }
+        .btn-primary:hover { background: var(--teal-dark); }
+        .btn-secondary {
+            background: var(--navy-light);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: var(--border); }
+        .btn-success { background: var(--green); color: white; }
+        .btn-danger { background: var(--red); color: white; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-urgent { background: #dc262620; color: var(--red); border: 1px solid var(--red); }
+        .badge-inquiry { background: #eab30820; color: var(--gold); border: 1px solid var(--gold); }
+        .badge-invoice { background: #16a34a20; color: var(--green); border: 1px solid var(--green); }
+        .badge-newsletter { background: #2563eb20; color: #60a5fa; border: 1px solid #60a5fa; }
+        .badge-spam { background: #6b728020; color: var(--gray); border: 1px solid var(--gray); }
+        .badge-booking { background: #9333ea20; color: var(--purple); border: 1px solid var(--purple); }
+        .badge-revenue { background: #ea580c20; color: var(--orange); border: 1px solid var(--orange); }
+        .email-list { display: flex; flex-direction: column; gap: 2px; }
+        .email-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .email-item:hover { background: var(--navy-light); }
+        .email-item.unread { border-left: 3px solid var(--teal); }
+        .email-from { font-weight: 500; min-width: 180px; font-size: 14px; }
+        .email-subject { flex: 1; font-size: 14px; color: var(--text-muted); }
+        .email-snippet { font-size: 12px; color: var(--text-muted); max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .email-date { font-size: 12px; color: var(--text-muted); min-width: 80px; text-align: right; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .stat-value { font-size: 28px; font-weight: 700; color: var(--teal); }
+        .stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text-muted); }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+        th { color: var(--text-muted); font-weight: 500; font-size: 12px; text-transform: uppercase; }
+        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+        .alert-info { background: #2563eb20; border: 1px solid #2563eb40; color: #60a5fa; }
+        .alert-success { background: #16a34a20; border: 1px solid #16a34a40; color: var(--green); }
+        .alert-warning { background: #eab30820; border: 1px solid #eab30840; color: var(--gold); }
+        .toggle { display: flex; align-items: center; gap: 10px; }
+        .toggle input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--teal); }
+        .slot-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .slot-btn {
+            padding: 8px 14px;
+            background: var(--navy-light);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .slot-btn:hover { border-color: var(--teal); color: var(--teal); }
+        .slot-btn.selected { background: var(--teal); color: var(--navy); border-color: var(--teal); }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    {% if user %}
+    <nav class="nav">
+        <a href="/dashboard" class="nav-logo">
+            <img src="/static/img/logo128.png" alt="" class="nav-logo-img" role="presentation">
+            <span class="nav-logo-text">Email Sail</span>
+        </a>
+        <div class="nav-links">
+            <a href="/dashboard" class="{% if page == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="/inbox" class="{% if page == 'inbox' %}active{% endif %}">Inbox</a>
+            <a href="/drafts" class="{% if page == 'drafts' %}active{% endif %}">Drafts</a>
+            <a href="/calendar" class="{% if page == 'calendar' %}active{% endif %}">Calendar</a>
+            <a href="/crm" class="{% if page == 'crm' %}active{% endif %}">CRM</a>
+            <a href="/settings" class="{% if page == 'settings' %}active{% endif %}">Settings</a>
+        </div>
+        <div class="nav-user">
+            {% if user.get('picture') %}
+            <img src="{{ user.picture }}" alt="">
+            {% endif %}
+            <span>{{ user.get('name', user.get('email', '')) }}</span>
+            <a href="/auth/logout" class="btn btn-sm btn-secondary">Logout</a>
+        </div>
+    </nav>
+    {% endif %}
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Settings — Email Sail{% endblock %}
+{% block content %}
+<h1 style="font-size: 24px; margin-bottom: 24px;">⚙️ Settings</h1>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header"><div class="card-title">📱 Twilio (SMS + Voice)</div></div>
+        <div class="form-group">
+            <label>Account SID</label>
+            <input type="text" id="twilio_sid" placeholder="AC...">
+        </div>
+        <div class="form-group">
+            <label>Auth Token</label>
+            <input type="password" id="twilio_token" placeholder="Your auth token">
+        </div>
+        <div class="form-group">
+            <label>Twilio Phone Number</label>
+            <input type="text" id="twilio_phone" placeholder="+15551234567">
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><div class="card-title">💰 Gumroad (Revenue Signals)</div></div>
+        <div class="form-group">
+            <label>API Key</label>
+            <input type="password" id="gumroad_key" placeholder="Your Gumroad API key">
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted);">Used to detect abandoned carts and failed payments. Optional.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">✍️ Email Preferences</div></div>
+    <div class="grid-2">
+        <div class="form-group">
+            <label>Default Tone</label>
+            <select id="tone_pref">
+                <option value="professional">Professional</option>
+                <option value="warm">Warm & Friendly</option>
+                <option value="direct">Direct & Concise</option>
+                <option value="empathetic">Empathetic</option>
+            </select>
+        </div>
+        <div>
+            <div class="toggle" style="margin-bottom: 12px;">
+                <input type="checkbox" id="auto_classify" checked>
+                <label for="auto_classify">Auto-classify incoming emails</label>
+            </div>
+            <div class="toggle" style="margin-bottom: 12px;">
+                <input type="checkbox" id="auto_draft" checked>
+                <label for="auto_draft">Auto-draft responses for inquiries</label>
+            </div>
+            <div class="toggle">
+                <input type="checkbox" id="church_discount">
+                <label for="church_discount">I'm a church/nonprofit (50% discount)</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="text-align: right; margin-top: 16px;">
+    <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadSettings() {
+    try {
+        const resp = await fetch('/api/settings/');
+        const data = await resp.json();
+        document.getElementById('twilio_sid').value = data.twilio_sid || '';
+        document.getElementById('twilio_phone').value = data.twilio_phone || '';
+        document.getElementById('gumroad_key').value = data.gumroad_key || '';
+        document.getElementById('tone_pref').value = data.tone_preference || 'professional';
+        document.getElementById('auto_classify').checked = data.auto_classify;
+        document.getElementById('auto_draft').checked = data.auto_draft;
+        document.getElementById('church_discount').checked = data.church_discount;
+    } catch (e) { console.error('Error loading settings:', e); }
+}
+
+async function saveSettings() {
+    try {
+        const resp = await fetch('/api/settings/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                twilio_sid: document.getElementById('twilio_sid').value,
+                twilio_auth_token: document.getElementById('twilio_token').value,
+                twilio_phone: document.getElementById('twilio_phone').value,
+                gumroad_key: document.getElementById('gumroad_key').value,
+                tone_preference: document.getElementById('tone_pref').value,
+                auto_classify: document.getElementById('auto_classify').checked,
+                auto_draft: document.getElementById('auto_draft').checked,
+                church_discount: document.getElementById('church_discount').checked,
+            }),
+        });
+        const data = await resp.json();
+        alert('Settings saved!');
+    } catch (e) { alert('Error saving: ' + e.message); }
+}
+
+loadSettings();
+</script>
+{% endblock %}

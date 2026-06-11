@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Email Sail Agent — Escape Email Jail{% endblock %}
+{% block content %}
+<div style="text-align: center; padding: 80px 20px; max-width: 700px; margin: 0 auto;">
+    <img src="/static/img/logo128.png" alt="" style="width: 80px; height: 80px; border-radius: 16px; margin-bottom: 24px;">
+    <h1 style="font-size: 42px; font-weight: 800; margin-bottom: 16px; background: linear-gradient(135deg, var(--teal), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Email Sail Agent
+    </h1>
+    <p style="font-size: 18px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.6;">
+        Escape email jail. Auto-sort your inbox, draft responses, book appointments, text customers, and retain revenue — all from one click.
+    </p>
+    <a href="/auth/login" class="btn btn-primary" style="font-size: 16px; padding: 14px 32px;">
+        🚀 Get Started — Connect Gmail
+    </a>
+    <p style="margin-top: 16px; font-size: 13px; color: var(--text-muted);">
+        Free tier available. No credit card required.
+    </p>
+
+    <div class="stats-grid" style="margin-top: 60px; text-align: left;">
+        <div class="card">
+            <div class="card-title">📥 Smart Sort</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">Auto-labels emails into 7 categories: urgent, inquiry, invoice, booking, newsletter, spam, revenue alert.</p>
+        </div>
+        <div class="card">
+            <div class="card-title">✍️ AI Drafts</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">Writes response drafts in Google Docs. You review, edit, approve. Nothing sends without you.</p>
+        </div>
+        <div class="card">
+            <div class="card-title">📅 Auto-Book</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">Detects scheduling requests, finds your best slots, books confirmations via Google Calendar.</p>
+        </div>
+        <div class="card">
+            <div class="card-title">📱 Text + Call</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">Draft and send SMS to customers. Click-to-call with AI-generated scripts.</p>
+        </div>
+        <div class="card">
+            <div class="card-title">💰 Revenue Guard</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">Detects abandoned carts and failed payments. Drafts recovery emails that actually convert.</p>
+        </div>
+        <div class="card">
+            <div class="card-title">📊 CRM Built-In</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">Every interaction logged to Google Sheets. Customer history, revenue, last contact — all tracked.</p>
+        </div>
+    </div>
+
+    <div style="margin-top: 60px;">
+        <h2 style="font-size: 24px; margin-bottom: 24px;">Simple Pricing</h2>
+        <div class="grid-3">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 32px; font-weight: 700; color: var(--teal);">Free</div>
+                <div style="font-size: 14px; color: var(--text-muted); margin: 8px 0;">Email sort + labels</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Dashboard + inbox view</div>
+            </div>
+            <div class="card" style="text-align: center; border-color: var(--teal);">
+                <div style="font-size: 32px; font-weight: 700; color: var(--teal);">$99</div>
+                <div style="font-size: 14px; color: var(--text-muted); margin: 8px 0;">Starter</div>
+                <div style="font-size: 12px; color: var(--text-muted);">+ AI drafts + CRM logging</div>
+            </div>
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 32px; font-weight: 700; color: var(--gold);">$299</div>
+                <div style="font-size: 14px; color: var(--text-muted); margin: 8px 0;">Pro</div>
+                <div style="font-size: 12px; color: var(--text-muted);">+ Calendar + SMS + Revenue</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
