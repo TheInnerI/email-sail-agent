@@ -12,43 +12,85 @@
       <stop offset="0%" style="stop-color:#1e3a5f"/>
       <stop offset="100%" style="stop-color:#1a2744"/>
     </linearGradient>
-    <linearGradient id="wave1" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#2dd4bf;stop-opacity:0.6"/>
-      <stop offset="100%" style="stop-color:#14b8a6;stop-opacity:0.3"/>
+    <linearGradient id="flameCore" cx="50%" cy="75%" r="50%">
+      <stop offset="0%" stop-color="#fff"/>
+      <stop offset="20%" stop-color="#fff8e0"/>
+      <stop offset="50%" stop-color="#f0d060"/>
+      <stop offset="100%" stop-color="#c9a84c"/>
     </linearGradient>
-    <linearGradient id="wave2" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#2dd4bf;stop-opacity:0.4"/>
-      <stop offset="100%" style="stop-color:#14b8a6;stop-opacity:0.2"/>
+    <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#fff8e0" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ankhGold" x1="64" y1="2" x2="64" y2="48">
+      <stop offset="0%" stop-color="#f0d870"/>
+      <stop offset="50%" stop-color="#c9a84c"/>
+      <stop offset="100%" stop-color="#8b6914"/>
     </linearGradient>
-    <linearGradient id="compass" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f59e0b"/>
-      <stop offset="100%" style="stop-color:#d97706"/>
-    </linearGradient>
+    <filter id="flameGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="eyeGlowFilter" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
 
   <!-- Background -->
   <rect width="128" height="128" rx="24" fill="url(#bg)"/>
 
+  <!-- ===== OBSERVER EYE (above the sail, watching) ===== -->
+  <g filter="url(#eyeGlowFilter)" transform="translate(0, -2)">
+    <!-- Eye glow behind -->
+    <circle cx="64" cy="22" r="14" fill="url(#eyeGlow)" opacity="0.5"/>
+    <!-- Eye white (sclera) -->
+    <ellipse cx="64" cy="22" rx="12" ry="9" fill="#0a0a0f"/>
+    <!-- Iris ring -->
+    <circle cx="64" cy="22" r="7" fill="none" stroke="#c9a84c" stroke-width="2" opacity="0.8"/>
+    <circle cx="64" cy="22" r="4.5" fill="none" stroke="#f0d870" stroke-width="1" opacity="0.6"/>
+    <!-- Pupil — the dark center -->
+    <circle cx="64" cy="22" r="2.5" fill="#0a0a0f"/>
+    <!-- White highlight (reflection) -->
+    <circle cx="62" cy="20" r="1.2" fill="#fff" opacity="0.8"/>
+    <circle cx="66" cy="24" r="0.6" fill="#fff" opacity="0.4"/>
+    <!-- Inner flame flicker in the eye -->
+    <circle cx="64" cy="22" r="1.2" fill="#c9a84c" opacity="0.6"/>
+  </g>
+
+  <!-- ===== WHITE FLAME CROWN (small, above the eye) ===== -->
+  <g filter="url(#flameGlow)" transform="translate(0, -4)">
+    <!-- Outer flame envelope -->
+    <ellipse cx="64" cy="10" rx="10" ry="12" fill="#fff" opacity="0.7"/>
+    <ellipse cx="64" cy="9" rx="7" ry="10" fill="url(#flameCore)" opacity="0.8"/>
+    <ellipse cx="64" cy="8" rx="4" ry="7" fill="#fff" opacity="0.85"/>
+    <!-- Top flame spike -->
+    <ellipse cx="64" cy="4" rx="3" ry="5" fill="#fff" opacity="0.9"/>
+  </g>
+
+  <!-- ===== SAILBOAT ===== -->
+
   <!-- Waves (back) -->
-  <path d="M0 90 Q32 80 64 90 Q128 110 128 90 L128 128 L0 128Z" fill="url(#wave2)"/>
-  <path d="M0 100 Q32 90 64 100 Q128 120 128 100 L128 128 L0 128Z" fill="url(#wave1)"/>
+  <path d="M0 88 Q32 78 64 88 Q128 108 128 88 L128 128 L0 128Z" fill="#2dd4bf" opacity="0.15"/>
+  <path d="M0 96 Q32 86 64 96 Q128 116 128 96 L128 128 L0 128Z" fill="#2dd4bf" opacity="0.25"/>
 
   <!-- Hull -->
-  <path d="M28 85 L100 85 L90 105 L38 105Z" fill="url(#hull)"/>
+  <path d="M28 82 L100 82 L90 102 L38 102Z" fill="url(#hull)"/>
 
   <!-- Mast -->
-  <line x1="64" y1="20" x2="64" y2="85" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+  <line x1="64" y1="28" x2="64" y2="82" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
 
-  <!-- Sail (compass rose pattern) -->
-  <path d="M64 25 L85 70 L64 60 L43 70 Z" fill="url(#sail)" opacity="0.9"/>
+  <!-- Sail (teal with compass rose pattern) -->
+  <path d="M64 32 L82 70 L64 62 L46 70 Z" fill="url(#sail)" opacity="0.9"/>
 
-  <!-- Compass needle (gold diamond) -->
-  <polygon points="64,30 72,45 64,55 56,45" fill="url(#compass)"/>
+  <!-- Compass needle (gold diamond in sail) -->
+  <polygon points="64,38 69,50 64,58 59,50" fill="#f59e0b"/>
 
   <!-- Compass center dot -->
-  <circle cx="64" cy="45" r="3" fill="#1a2744"/>
+  <circle cx="64" cy="50" r="2" fill="#1a2744"/>
 
   <!-- Wave highlights -->
-  <path d="M10 95 Q25 90 40 95" stroke="#2dd4bf" stroke-width="1.5" fill="none" opacity="0.5"/>
-  <path d="M70 105 Q85 100 100 105" stroke="#2dd4bf" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <path d="M10 92 Q25 87 40 92" stroke="#2dd4bf" stroke-width="1.2" fill="none" opacity="0.4"/>
+  <path d="M70 100 Q85 95 100 100" stroke="#2dd4bf" stroke-width="1.2" fill="none" opacity="0.3"/>
 </svg>
