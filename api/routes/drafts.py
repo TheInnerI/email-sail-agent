@@ -37,14 +37,31 @@ async def create_draft(request: Request):
         # Classify
         classification = classify_email(parsed["subject"], parsed["body"], parsed["from_email"])
 
-        # Create draft in Google Docs
+        # Get user's tier and preferred model from settings
+        db = await get_db()
+        cursor = await db.execute(
+            "SELECT tier, preferred_model, business_info FROM user_settings WHERE user_id = ?",
+            (user["google_id"],),
+        )
+        user_settings = await cursor.fetchone()
+        await db.close()
+
+        user_tier = user_settings["tier"] if user_settings and user_settings["tier"] else "free"
+        preferred_model = user_settings["preferred_model"] if user_settings else None
+        business_info = user_settings["business_info"] if user_settings else ""
+
+        # Create draft in Google Docs (AI or template fallback)
         draft_result = await create_draft_in_docs(
             access_token=user["access_token"],
             subject=parsed["subject"],
             sender_name=parsed["from_name"],
+            sender_email=parsed["from_email"],
             email_body=parsed["body"],
             category=classification["category"],
             tone=tone,
+            business_info=business_info,
+            tier=user_tier,
+            preferred_model=preferred_model,
         )
 
         # Store draft in local DB
@@ -52,8 +69,8 @@ async def create_draft(request: Request):
         await db.execute(
             """INSERT INTO drafts
                (user_id, thread_id, gmail_message_id, google_doc_id, google_doc_url,
-                subject, body, tone, status, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))""",
+                subject, body, tone, status, model_used, ai_generated, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, datetime('now'))""",
             (
                 user["google_id"],
                 parsed["thread_id"],
@@ -63,6 +80,8 @@ async def create_draft(request: Request):
                 parsed["subject"],
                 draft_result["draft_text"],
                 tone,
+                draft_result.get("model_used", "template"),
+                draft_result.get("ai_generated", False),
             ),
         )
         await db.commit()
@@ -75,6 +94,8 @@ async def create_draft(request: Request):
             "doc_title": draft_result["doc_title"],
             "category": classification["category"],
             "draft_text": draft_result["draft_text"],
+            "ai_generated": draft_result.get("ai_generated", False),
+            "model_used": draft_result.get("model_used", "template"),
         }
     except Exception as e:
         logger.error("Error creating draft: %s", e)

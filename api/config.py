@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     # MIO Observer
     MIO_OBSERVER_URL: str = "http://localhost:8787"
 
+    # OpenRouter (LLM for email drafts)
+    OPENROUTER_API_KEY: str = ""
+    OPENROUTER_DEFAULT_MODEL: str = "openrouter/auto"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
