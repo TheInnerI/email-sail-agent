@@ -24,10 +24,10 @@ OPENROUTER_HEADERS = {
 # All models verified to exist on OpenRouter as of 2026-06-11
 MODELS = {
     # Free tier
-    "free": "google/gemma-4-26b-a4b-it:free",
+    "free": "openrouter/owl-alpha",
     "free_2": "meta-llama/llama-3.1-8b-instruct:free",
     # Cheap tier (good enough for drafts)
-    "cheap": "google/gemma-4-26b-a4b-it:free",
+    "cheap": "openrouter/owl-alpha",
     "cheap_2": "openrouter/auto",
     "cheap_3": "mistralai/mistral-7b-instruct:free",
     # Standard tier (quality drafts)
