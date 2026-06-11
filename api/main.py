@@ -10,11 +10,11 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
 
 from api.config import settings
 from api.database import init_db
+from api.templates import respond
 from api.routes import auth, dashboard, emails, drafts, calendar, sms, crm, settings as settings_routes
 from api.routes.fareharbor import router as fh_router, webhook_router as fh_webhook_router
 
@@ -40,30 +40,6 @@ Path("data").mkdir(exist_ok=True)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="api/static"), name="static")
-
-# Templates — use raw Jinja2 Environment to avoid FastAPI cache corruption
-_template_env = None
-
-def get_templates():
-    global _template_env
-    if _template_env is None:
-        from jinja2 import Environment, FileSystemLoader, select_autoescape
-        _template_env = Environment(
-            loader=FileSystemLoader("api/templates"),
-            autoescape=select_autoescape(["html", "xml"]),
-        )
-    return _template_env
-
-def respond(request, template_name: str, context: dict = None):
-    """Render a template without Jinja2 TemplateResponse cache issues."""
-    ctx = {"request": request}
-    if context:
-        ctx.update(context)
-    env = get_templates()
-    tmpl = env.get_template(template_name)
-    content = tmpl.render(**ctx)
-    from fastapi.responses import HTMLResponse
-    return HTMLResponse(content=content)
 
 # Initialize database on startup
 @app.on_event("startup")
@@ -98,7 +74,7 @@ async def health():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
-        "main:app",
+        "api.main:app",
         host=settings.APP_HOST,
         port=settings.APP_PORT,
         reload=settings.APP_DEBUG,

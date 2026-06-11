@@ -7,7 +7,7 @@ import logging
 from fastapi import APIRouter, Request, HTTPException
 
 from api.routes.auth import require_user, _get_session
-from api.main import respond
+from api.templates import respond
 
 logger = logging.getLogger("email-sail.dashboard")
 router = APIRouter()
