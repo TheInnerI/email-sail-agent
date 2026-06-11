@@ -23,12 +23,12 @@ OPENROUTER_HEADERS = {
 # Model presets — map tier to OpenRouter model ID
 MODELS = {
     # Free / ultra-cheap tier
-    "free": "google/gemma-2-9b-it:free",
+    "free": "google/gemini-2.0-flash-lite-001",
     "free_2": "meta-llama/llama-3.1-8b-instruct:free",
     # Cheap tier (good enough for drafts)
     "cheap": "openrouter/auto",          # auto-picks best value
-    "cheap_2": "kimi/moonshot-v1-8k",    # Kimi via OpenRouter
-    "cheap_3": "google/gemini-flash-1.5",
+    "cheap_2": "google/gemini-2.0-flash-001",
+    "cheap_3": "mistralai/mistral-7b-instruct:free",
     # Standard tier (quality drafts)
     "standard": "anthropic/claude-sonnet-4",
     "standard_2": "openai/gpt-4o-mini",
