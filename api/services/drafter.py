@@ -76,6 +76,7 @@ async def create_draft_in_docs(
     business_info: str = "",
     tier: str = "cheap",
     preferred_model: str = None,
+    user_name: str = "",
 ) -> dict:
     """
     Full pipeline: generate AI draft → create Google Doc.
@@ -109,6 +110,7 @@ async def create_draft_in_docs(
                 business_info=business_info,
                 tier=tier,
                 preferred_model=preferred_model,
+                user_name=user_name,
             )
             draft_text = result["text"]
             model_used = result.get("model", "unknown")

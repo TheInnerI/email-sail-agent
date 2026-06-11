@@ -49,6 +49,7 @@ async def create_draft(request: Request):
         user_tier = user_settings["tier"] if user_settings and user_settings["tier"] else "free"
         preferred_model = user_settings["preferred_model"] if user_settings else None
         business_info = user_settings["business_info"] if user_settings else ""
+        user_name = user.get("name", "")  # from Google OAuth session
 
         # Create draft in Google Docs (AI or template fallback)
         draft_result = await create_draft_in_docs(
@@ -62,6 +63,7 @@ async def create_draft(request: Request):
             business_info=business_info,
             tier=user_tier,
             preferred_model=preferred_model,
+            user_name=user_name,
         )
 
         # Store draft in local DB

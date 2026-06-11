@@ -197,13 +197,14 @@ class LLMService:
         tier: str = "cheap",
         preferred_model: str = None,
         max_words: int = 200,
+        user_name: str = "",
     ) -> dict:
         """
         Specialized method: draft an email response.
 
         Returns dict with: text, model, usage
         """
-        system_prompt = self._build_email_system_prompt(tone, business_info)
+        system_prompt = self._build_email_system_prompt(tone, business_info, user_name)
         user_prompt = self._build_email_user_prompt(
             subject, sender_name, sender_email, email_body, category
         )
@@ -224,7 +225,7 @@ Write a response in under {word_limit} words. HTML format. No placeholders like 
         )
 
     @staticmethod
-    def _build_email_system_prompt(tone: str, business_info: str) -> str:
+    def _build_email_system_prompt(tone: str, business_info: str, user_name: str = "") -> str:
         tone_guides = {
             "professional": (
                 "You write in a professional, clear, and courteous tone. "
@@ -257,7 +258,7 @@ Write a response in under {word_limit} words. HTML format. No placeholders like 
             "- Use the sender's name in the greeting\n"
             "- Address their specific question/request directly\n"
             "- Include a clear next step or call to action\n"
-            "- Sign off professionally\n"
+            f"- Sign off as: {user_name}\n"
             "- HTML format (use <p>, <br>, <strong> as needed)\n"
             "- No placeholders — write a complete, ready-to-send response"
         )
