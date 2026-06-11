@@ -263,6 +263,10 @@ Write a response in under {word_limit} words. HTML format. No placeholders like 
             "- No placeholders — write a complete, ready-to-send response"
         )
 
+        # Add custom signature if provided
+        if user_name:
+            parts.append(f"\n\nSignature to use at the end of the email:\n{user_name}")
+
         return "\n".join(parts)
 
     @staticmethod

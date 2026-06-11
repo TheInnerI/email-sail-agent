@@ -146,6 +146,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
     tier TEXT DEFAULT 'free',
     preferred_model TEXT DEFAULT '',
     business_info TEXT DEFAULT '',
+    signature TEXT DEFAULT '',
     tone_preference TEXT DEFAULT 'professional',
     auto_classify INTEGER DEFAULT 1,
     auto_draft INTEGER DEFAULT 1,
